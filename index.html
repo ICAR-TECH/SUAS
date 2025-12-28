@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Seed Utilization Analytics Suite</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f7f9fc;
+        color: #222;
+    }
+
+    header {
+        background: linear-gradient(90deg, #1b5e20, #4caf50);
+        color: white;
+        padding: 24px 10px;
+        text-align: center;
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 40px;
+        font-weight: bold;
+    }
+
+    header p {
+        margin: 8px 0 0 0;
+        font-size: 16px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.4;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 30px auto 40px auto;
+        padding: 0 20px;
+    }
+
+    .intro-card {
+        background: #ffffff;
+        padding: 20px 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .intro-card h2 {
+        margin-top: 0;
+        color: #1b5e20;
+    }
+
+    .tool-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 25px;
+    }
+
+    .tool-card {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 22px 24px 26px 24px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border-top: 4px solid #2e7d32;
+    }
+
+    .tool-card:nth-child(2) {
+        border-top-color: #1565c0;
+    }
+
+    .tool-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #1b5e20;
+    }
+
+    .tool-subtitle {
+        font-size: 14px;
+        font-weight: bold;
+        color: #555;
+        margin-bottom: 10px;
+    }
+
+    .tool-desc {
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 18px;
+    }
+
+    .tool-button {
+        display: inline-block;
+        text-align: center;
+        padding: 14px 18px;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        color: #ffffff;
+        background: linear-gradient(90deg, #2e7d32, #4caf50);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+        transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.08s ease;
+    }
+
+    .tool-card:nth-child(2) .tool-button {
+        background: linear-gradient(90deg, #1565c0, #42a5f5);
+    }
+
+    .tool-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.20);
+        opacity: 0.95;
+    }
+
+    .tool-button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    }
+
+    footer {
+        margin-top: 40px;
+        padding: 15px;
+        text-align: center;
+        font-size: 14px;
+        background: #eeeeee;
+        color: #444;
+        line-height: 1.5;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Seed Utilization Analytics Suite</h1>
+    <p>
+        Explore interactive tools for analyzing seed-driven expansion of cultivated area,
+        supporting CFLD impact assessment, seed system planning, and varietal dissemination strategies.
+       <br>Developed by: ICAR-ATARI, Zone-II, Jodhpur, Rajasthan, India & ICAR-IASRI, New Delhi, India
+    </p>
+</header>
+
+<div class="container">
+
+    <div class="intro-card">
+        <h2>About These Tools</h2>
+        <p>
+            This suite brings together two complementary decision-support tools for seed-based scaling analysis.
+            The heatmap tool focuses on three-year outcomes under different utilization efficiencies,
+            while the trajectory tool explores year-wise growth paths and saturation behavior.
+        </p>
+    </div>
+
+    <div class="tool-grid">
+
+        <!-- Tool 1: TSH -->
+        <div class="tool-card">
+            <div>
+                <div class="tool-title">TSH: Three-Year Seed-Utilization Heatmap</div>
+                <div class="tool-subtitle">Three-year coverage outcomes under varying seed efficiencies</div>
+                <p class="tool-desc">
+                    This tool simulates crop area expansion driven by seed production and utilization efficiency
+                    over three successive years. It generates a heatmap showing the percentage of total area
+                    covered after Year&nbsp;3 under different seed utilization scenarios, helping to identify
+                    saturation thresholds, efficiency gaps, and optimal utilization pathways for planners
+                    and researchers.
+                </p>
+            </div>
+            <a href="TSH.html" class="tool-button">
+                Open TSH Heatmap Tool
+            </a>
+        </div>
+
+        <!-- Tool 2: YGT -->
+        <div class="tool-card">
+            <div>
+                <div class="tool-title">YGT: Year-wise Growth Trajectories</div>
+                <div class="tool-subtitle">Dynamic trajectories of area coverage over time</div>
+                <p class="tool-desc">
+                    This tool simulates year-wise expansion of cultivated area based on seed multiplication
+                    dynamics under varying utilization efficiencies. Starting from an initial CFLD seed source,
+                    it traces the growth of coverage over successive years, revealing the pace and saturation
+                    potential of varietal dissemination and informing long-term scaling projections for
+                    policy and extension interventions.
+                </p>
+            </div>
+            <a href="YGT.html" class="tool-button">
+                Open YGT Trajectory Tool
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    Developed by:<br>
+    ICAR-ATARI, Zone-II, Jodhpur, Rajasthan, India<br>
+    ICAR-IASRI, New Delhi, India
+</footer>
+
+</body>
+</html>

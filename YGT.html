@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Seed Utilization vs Area Coverage</title>
+
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f7f9fc;
+        margin: 0;
+        color: #222;
+    }
+
+    header {
+        background: linear-gradient(90deg, #1b5e20, #4caf50);
+        color: white;
+        padding: 22px;
+        text-align: center;
+        font-size: 52px;
+        font-weight: bold;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: auto;
+        padding: 30px;
+    }
+
+    .inputs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    input {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    button {
+        padding: 10px 18px;
+        font-size: 15px;
+        background: #2e7d32;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    #plot-wrapper {
+        margin-top: 30px;
+        width: 100%;
+        max-width: 700px;
+        aspect-ratio: 1 / 0.8;
+        margin-left: auto;
+        margin-right: auto;
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    #chart {
+        width: 100%;
+        height: 100%;
+    }
+
+    footer {
+        margin-top: 40px;
+        padding: 15px;
+        text-align: center;
+        font-size: 14px;
+        background: #eeeeee;
+    }
+
+    .banner-wrapper {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .ygt-banner {
+        width: 100%;
+        max-width: 900px;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+YGT: Year-wise Growth Trajectories of Area Coverage under Varying Seed Utilization Rates
+</header>
+
+<div class="container">
+    <div style="
+        background:#ffffff;
+        padding:20px 25px;
+        border-radius:8px;
+        margin-bottom:25px;
+        line-height:1.6;
+        box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    ">
+        <h3 style="margin-top:0;color:#1b5e20;">About the Tool</h3>
+        <p>
+            This tool simulates year-wise expansion of cultivated area based on seed
+            multiplication dynamics under varying seed utilization efficiencies.
+            Starting from an initial CFLD seed source, the model iteratively estimates
+            how seed availability drives area coverage growth over successive years.
+            The resulting growth trajectories help assess the pace and saturation
+            potential of varietal dissemination programs.
+            Applications include CFLD impact evaluation, seed system planning,
+            strategic targeting of utilization efficiency, and long-term scaling
+            projections for policy and extension interventions.
+        </p>
+    </div>
+</div>
+
+<div class="banner-wrapper">
+    <img src="YGT_banner.png" alt="YGT Banner" class="ygt-banner">
+</div>
+
+<div class="container">
+
+<div class="inputs">
+    <div>
+        <label>Total Area (ha)</label>
+        <input type="number" id="total_area" value="1050953">
+    </div>
+    <div>
+        <label>CFLD Area (ha)</label>
+        <input type="number" id="cfld_area" value="1118.16">
+    </div>
+    <div>
+        <label>Productivity (q/ha)</label>
+        <input type="number" step="0.01" id="prod" value="5.3">
+    </div>
+    <div>
+        <label>Seed Rate (q/ha)</label>
+        <input type="number" step="0.001" id="seed_rate" value="0.12">
+    </div>
+    <div>
+        <label>Utilization Rates (comma-separated)</label>
+        <input type="text" id="util_rates" value="0.15, 0.30, 0.45, 0.60, 0.75">
+    </div>
+</div>
+
+<button onclick="generatePlot()">Generate Plot</button>
+<button onclick="downloadCSV()" style="margin-left:10px;background:#1565c0;">
+    Download CSV
+</button>
+
+<div id="plot-wrapper">
+    <div id="chart"></div>
+</div>
+
+</div>
+
+<footer>
+    Developed by:<br>ICAR-ATARI, Zone-II, Jodhpur, Rajasthan, India<br> ICAR-IASRI, New Delhi, India
+</footer>
+
+<script>
+const colorPalette = [
+    "#2e7d32", "#1565c0", "#ef6c00", "#6a1b9a", "#5d4037",
+    "#00838f", "#c62828"
+];
+
+/**
+ * Modified stopping rule:
+ * - Start from CFLD area.
+ * - Each step compute next potential area (capped at total_area).
+ * - Stop when the next area is not larger than the previous one
+ *   (i.e. seed fraction is no longer sufficient to expand coverage).
+ */
+function simulateAreaCoverage(util, total_area, cfld_area, prod, seed_rate) {
+    let production = cfld_area * prod;
+    let areaList = [];
+    let prevArea = cfld_area;
+
+    while (true) {
+        let areaNext = Math.min((production * util) / seed_rate, total_area);
+
+        // if we cannot expand further, break
+        if (areaNext <= prevArea) {
+            break;
+        }
+
+        let percent = (areaNext / total_area) * 100;
+        areaList.push(+percent.toFixed(1));
+
+        // update for next iteration
+        prevArea = areaNext;
+        production = areaNext * prod;
+    }
+    return areaList;
+}
+
+let sessionData = {};
+
+function generatePlot() {
+    sessionData = {};
+
+    const total_area = +document.getElementById("total_area").value;
+    const cfld_area = +document.getElementById("cfld_area").value;
+    const prod = +document.getElementById("prod").value;
+    const seed_rate = +document.getElementById("seed_rate").value;
+
+    const utilizationRates = document.getElementById("util_rates")
+        .value.split(",")
+        .map(v => parseFloat(v.trim()))
+        .filter(v => !isNaN(v) && v > 0 && v <= 1);
+
+    if (utilizationRates.length === 0) {
+        alert("Please enter valid utilization rates between 0 and 1.");
+        return;
+    }
+
+    let traces = [];
+    let annotations = [];
+    let maxYears = 0;
+
+    utilizationRates.forEach((util, idx) => {
+
+        const areaList = simulateAreaCoverage(util, total_area, cfld_area, prod, seed_rate);
+        sessionData[`${Math.round(util * 100)}% Utilization`] = areaList;
+
+        const years = areaList.map((_, i) => i + 1);
+        maxYears = Math.max(maxYears, years.length);
+
+        traces.push({
+            x: years,
+            y: areaList,
+            mode: "lines+markers",
+            line: { width: 3, color: colorPalette[idx % colorPalette.length] },
+            marker: { size: 8 },
+            name: `${Math.round(util * 100)}% Utilization`
+        });
+
+        years.forEach((yr, i) => {
+            annotations.push({
+                x: yr,
+                y: areaList[i] + 2.5,
+                text: areaList[i] + "%",
+                showarrow: false,
+                font: {
+                    size: 12,
+                    color: colorPalette[idx % colorPalette.length]
+                }
+            });
+        });
+    });
+
+    const layout = {
+        title: "YGT: Year-wise Growth Trajectories of Area Coverage",
+        xaxis: {
+            title: "Year",
+            dtick: 1,
+            range: [1, Math.max(maxYears, 1)]
+        },
+        yaxis: {
+            title: "Area covered (%)",
+            range: [0, 110]
+        },
+        annotations: annotations,
+        shapes: [{
+            type: "line",
+            x0: 1,
+            x1: Math.max(maxYears, 1),
+            y0: 100,
+            y1: 100,
+            line: {
+                color: "red",
+                width: 3,
+                dash: "dash"
+            }
+        }]
+    };
+
+    Plotly.newPlot("chart", traces, layout, { responsive: true });
+    window.dispatchEvent(new Event("resize"));
+}
+
+function downloadCSV() {
+    if (Object.keys(sessionData).length === 0) {
+        alert("Please generate the plot first.");
+        return;
+    }
+
+    let years = Math.max(...Object.values(sessionData).map(arr => arr.length));
+    let header = ["Year", ...Object.keys(sessionData)];
+    let csvRows = [header.join(",")];
+
+    for (let i = 0; i < years; i++) {
+        let row = [i + 1];
+        for (let key of Object.keys(sessionData)) {
+            row.push(sessionData[key][i] !== undefined ? sessionData[key][i] : "");
+        }
+        csvRows.push(row.join(","));
+    }
+
+    let csvContent = csvRows.join("\n");
+    let blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "YGT_Area_Coverage_Trajectories.csv";
+    link.click();
+}
+</script>
+
+</body>
+</html>
